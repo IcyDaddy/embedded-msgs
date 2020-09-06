@@ -1,0 +1,93 @@
+use strict'
+
+/**
+ * Discord Console Self bot
+ *
+ * Open chrome console on Discord using Ctrl+shift+i
+ * Go to the network tab, send a message and copy the 'Authorize' header sent by the app.
+ * Paste it in authHeader below.
+ *
+ * Paste the entire script in the console.
+ * Now use the provided functions to do some stuff using api.func().
+ */
+
+
+// If vars not declared, declare them. We are in console, var could already be defined.
+if (typeof authHeader === 'undefined') {
+  var authHeader = ''
+  var apiPrefix = ''
+  var api = ''
+  var timeout = ''
+  var apiCall = ''
+  var setup = ''
+}
+
+// You 'Authorize' token here
+authHeader = ''
+
+apiPrefix = 'https://discordapp.com/api/v6'
+
+timeout = ms => new Promise(res => setTimeout(res, ms))
+
+apiCall = (apiPath, body, method = 'GET') =>
+  fetch(apiPrefix + apiPath, {
+    body: body ? JSON.stringify(body) : undefined,
+    headers: {
+      Accept: '*/*',
+      'Accept-Language': 'en-US',
+      Authority: 'discordapp.com',
+      Authorization: authHeader,
+      'Content-Type': 'application/json',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.301 Chrome/56.0.2924.87 Discord/1.6.15 Safari/537.36'
+    },
+    method
+  })
+    .then(res => (res.status === 200 ? res.json() : Promise.resolve()))
+    .catch(console.error)
+
+// Self bot API
+api = {
+  // Get messages from channel
+  getMessages(channelId) {
+    return apiCall(`/channels/${channelId}/messages?limit=100`)
+  },
+
+  // Send a message in a channel
+  sendMessage(channelId, message, tts) {
+    return apiCall(`/channels/${channelId}/messages`, { content: message, tts: !!tts }, 'POST')
+  },
+
+  // Edit a message in a channel
+  editMessage(channelId, messageId, newMessage) {
+    return apiCall(`/channels/${channelId}/messages/${messageId}`, { content: newMessage }, 'PATCH')
+  },
+
+  // Delete a message from a channel
+  deleteMessage(channelId, messageId) {
+    return apiCall(`/channels/${channelId}/messages/${messageId}`, null, 'DELETE')
+  }
+}
+
+
+// Examples
+/*
+setup = async () => {
+  // Get messages
+  const test1 = await api.getMessages('channel_id')
+  console.log(test1)
+  await timeout(3000)
+  // Send a message
+  const test2 = await api.sendMessage('channel_id', 'your_message')
+  console.log(test2)
+  await timeout(3000)
+  // Edit a message
+  const test3 = await api.editMessage('channel_id', 'message_id', 'your_new_message')
+  console.log(test3)
+  await timeout(3000)
+  // Delete a message
+  const test4 = await api.deleteMessage('channel_id', 'message_id')
+  console.log(test4)
+}
+setup()
+*/
